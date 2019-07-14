@@ -120,10 +120,13 @@ class Project extends ApiBase
 		$bid_arr = ['bid_way','bid_money','bid_date_start','bid_date_end'];
 		# 合同备案条件字段
 		$contract_arr = ['contract_type','contract_money','contract_scale','contract_date_start','contract_date_end'];
+		# 施工许可条件字段
+        $permit_arr = ['permit_money','permit_arar','permit_certdate_start','permit_certdate_end'];
 		# 竣工验收备案条件字段
 		$finish_arr = ['finish_money','finish_area','finish_realbegin_start','finish_realbegin_end','finish_realfinish_start','finish_realfinish_end'];
 		$params['bid'] = 0;
 		$params['contract'] = 0;
+        $params['permit'] = 0;
 		$params['finish'] = 0;
 		$params_keys = array_keys($params);
 		$params_count = count($params_keys);
@@ -134,6 +137,9 @@ class Project extends ApiBase
 			if (array_search($params_keys[$i], $contract_arr) !== false) {
 				$params['contract'] = 1;
 			}
+			if (array_search($params_keys[$i], $permit_arr) !== false) {
+                $params['permit'] = 1;
+            }
 			if (array_search($params_keys[$i], $finish_arr) !== false) {
 				$params['finish'] = 1;
 			}

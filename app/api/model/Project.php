@@ -83,6 +83,10 @@ class Project extends model{
             $join[] = ' join jz_project_contract pc on pc.project_url = p.project_url ';
             $count_filter_tables++;
         }
+        if ($params_arr['permit'] == 1){
+            $join[] = ' join jz_project_permit_new pp on pp.project_url = p.project_url ';
+            $count_filter_tables++;
+        }
         if ($params_arr['finish'] == 1){
             $join[] = ' join jz_project_finish pf on pf.project_url = p.project_url ';
             $count_filter_tables++;
@@ -130,6 +134,8 @@ class Project extends model{
         if (isset($where['finish_money'])){$where_finish[] = "pf.finish_money>=".$where['finish_money'];}
         if (isset($where['contract_scale'])){$where_finish[] = "pc.contract_scale>=".$where['contract_scale'];}
         if (isset($where['finish_area'])){$where_finish[] = "pf.finish_area>=".$where['finish_area'];}
+        if (isset($where['permit_money'])){$where_finish[] = "pp.permit_money>=".$where['permit_money'];}
+        if (isset($where['permit_area'])){$where_finish[] = "pp.permit_area>=".$where['permit_area'];}
         if (!empty($where)){
             # 遍历-加上引号
             $toQuotation = function($param) {
@@ -146,6 +152,8 @@ class Project extends model{
         if (isset($where['contract_type'])){$where_finish[] = "pc.contract_type=".$where['contract_type'];}
         if (isset($where['contract_date_start'])){$where_finish[] = "pc.contract_signtime>=".$where['contract_date_start'];}
         if (isset($where['contract_date_end'])){$where_finish[] = "pc.contract_signtime<=".$where['contract_date_end'];}
+        if (isset($where['permit_certdate_start'])){$where_finish[] = "pp.permit_certdate>=".$where['permit_certdate_start'];}
+        if (isset($where['permit_certdate_end'])){$where_finish[] = "pp.permit_certdate<=".$where['permit_certdate_end'];}
         if (isset($where['finish_realbegin_start'])){$where_finish[] = "pf.finish_realbegin>=".$where['finish_realbegin_start'];}
         if (isset($where['finish_realbegin_end'])){$where_finish[] = "pf.finish_realbegin<=".$where['finish_realbegin_end'];}
         if (isset($where['finish_realfinish_start'])){$where_finish[] = "pf.finish_realfinish>=".$where['finish_realfinish_start'];}
