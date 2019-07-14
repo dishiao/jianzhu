@@ -264,7 +264,8 @@ class Project extends model{
         'p.project_name','p.project_type','p.project_nature','p.project_use','p.project_allmoney','p.project_acreage',
         'pb.bid_type','pb.bid_way','pb.bid_unitname','pb.bid_date','pb.bid_money','pb.bid_area','pb.bid_unitagency','pb.bid_url',
         'pc.contract_type','pc.contract_money','pc.contract_signtime','pc.contract_scale','pc.contract_unitname','pc.contract_add_url',
-        'pf.finish_money','pf.finish_area','pf.finish_realbegin','pf.finish_realfinish','pf.finish_unitdsn','pf.finish_unitspv','pf.finish_unitcst','pf.finish_add_url'
+        'pf.finish_money','pf.finish_area','pf.finish_realbegin','pf.finish_realfinish','pf.finish_unitdsn','pf.finish_unitspv','pf.finish_unitcst','pf.finish_add_url',
+        'pp.permit_money','pp.permit_certdate'
         ];
         $where = [];
         $join = [];
@@ -275,8 +276,152 @@ class Project extends model{
         if (isset($params_arr['page_size']) && is_numeric($params_arr['page_size'])){
             $page_size = $params_arr['page_size'];
         }
-        # 判断连表
+        /*
+         * 判断连表 此处由于有4个不同的项目子项的选择，
+         * 而且根据不同的连接顺序，连表的 on 条件不同，
+         * 则使用判断来分开
+         * 全选和全不选 使用全 join
+         *
+         * bid          招投标
+         * contract     合同备案
+         * permit       施工许可
+         * finish       竣工验收
+         */
         # 有筛选项则用 join 没有选的就用left join 这样可以保证没有选的 不会被连表条件所影响
+
+        /*
+         *  招投标
+         * */
+        if ($params_arr['bid'] == 1 && $params_arr['contract'] == 0 && $params_arr['permit'] == 0 && $params_arr['finish'] == 0 ){
+            $join[] = " join jz_project_bid pb on p.project_url = pb.project_url ";
+            $join[] = " left join jz_project_contract pc on (p.project_url = pc.project_url and pb.company_url = pc.company_inpurl) ";
+            $join[] = " left join jz_project_permit_new pp on (p.project_url = pp.project_url and (pb.company_url = pp.company_rcsurl or pb.company_url = pp.company_dsnurl or pb.company_url = pp.company_spvurl or pb.company_url = pp.company_csturl) )";
+            $join[] = " left join jz_project_finish pf on (p.project_url = pf.project_url and (pb.company_url = pf.company_dsnurl or pb.company_url = pf.company_spvurl or pb.company_url = pf.company_csturl)) ";
+        }
+        /*
+         * 合同备案
+         * */
+        elseif ($params_arr['bid'] == 0 && $params_arr['contract'] == 1 && $params_arr['permit'] == 0 && $params_arr['finish'] == 0 ){
+            $join[] = " join jz_project_contract pc on p.project_url = pc.project_url ";
+            $join[] = " left join jz_project_bid pb on p.project_url = pb.project_url and pb.company_url = pc.company_inpurl ";
+            $join[] = " left join jz_project_permit_new pp on (p.project_url = pp.project_url and (pc.company_inpurl = pp.company_rcsurl or pc.company_inpurl = pp.company_dsnurl or pc.company_inpurl = pp.company_spvurl or pc.company_inpurl = pp.company_csturl) )";
+            $join[] = " left join jz_project_finish pf on (p.project_url = pf.project_url and (pc.company_inpurl = pf.company_dsnurl or pc.company_inpurl = pf.company_spvurl or pc.company_inpurl = pf.company_csturl)) ";
+        }
+        /*
+         * 施工许可
+         * */
+        elseif ($params_arr['bid'] == 0 && $params_arr['contract'] == 0 && $params_arr['permit'] == 1 && $params_arr['finish'] == 0 ){
+            $join[] = " join jz_project_permit_new pp on p.project_url = pp.project_url ";
+            $join[] = " left join jz_project_bid pb on (p.project_url = pb.project_url and (pb.company_url = pp.company_rcsurl or pb.company_url = pp.company_dsnurl or pb.company_url = pp.company_spvurl or pb.company_url = pp.company_csturl) )";
+            $join[] = " left join jz_project_contract pc on (p.project_url = pc.project_url and (pc.company_inpurl = pp.company_rcsurl or pc.company_inpurl = pp.company_dsnurl or pc.company_inpurl = pp.company_spvurl or pc.company_inpurl = pp.company_csturl) ) ";
+            $join[] = " left join jz_project_finish pf on p.project_url = pf.project_url ";
+        }
+        /*
+        * 竣工验收
+        * */
+        elseif ($params_arr['bid'] == 0 && $params_arr['contract'] == 0 && $params_arr['permit'] == 0 && $params_arr['finish'] == 1 ){
+            $join[] = " join jz_project_finish pf on p.project_url = pf.project_url ";
+            $join[] = " left join jz_project_bid pb on (p.project_url = pb.project_url and (pb.company_url = pf.company_dsnurl or pb.company_url = pf.company_spvurl or pb.company_url = pf.company_csturl)) ";
+            $join[] = " left join jz_project_contract pc on (p.project_url = pc.project_url and pb.company_url = pc.company_inpurl) ";
+            $join[] = " left join jz_project_permit_new pp on p.project_url = pp.project_url ";
+        }
+        /*
+        * 招投标 + 合同备案
+        * */
+        elseif ($params_arr['bid'] == 1 && $params_arr['contract'] == 1 && $params_arr['permit'] == 0 && $params_arr['finish'] == 0 ){
+            $join[] = " join jz_project_bid pb on p.project_url = pb.project_url";
+            $join[] = " join jz_project_contract pc on p.project_url = pc.project_url and pb.company_url = pc.company_inpurl ";
+            $join[] = " left join jz_project_permit_new pp on (p.project_url = pp.project_url and (pb.company_url = pp.company_rcsurl or pb.company_url = pp.company_dsnurl or pb.company_url = pp.company_spvurl or pb.company_url = pp.company_csturl) )";
+            $join[] = " left join jz_project_finish pf on (p.project_url = pf.project_url and (pb.company_url = pf.company_dsnurl or pb.company_url = pf.company_spvurl or pb.company_url = pf.company_csturl)) ";
+        }
+        /*
+        * 招投标 + 施工许可
+        * */
+        elseif ($params_arr['bid'] == 1 && $params_arr['contract'] == 0 && $params_arr['permit'] == 1 && $params_arr['finish'] == 0 ){
+            $join[] = " join jz_project_bid pb on p.project_url = pb.project_url";
+            $join[] = " join jz_project_permit_new pp on (p.project_url = pp.project_url and (pb.company_url = pp.company_rcsurl or pb.company_url = pp.company_dsnurl or pb.company_url = pp.company_spvurl or pb.company_url = pp.company_csturl) )";
+            $join[] = " left join jz_project_contract pc on p.project_url = pc.project_url and pb.company_url = pc.company_inpurl ";
+            $join[] = " left join jz_project_finish pf on (p.project_url = pf.project_url and (pb.company_url = pf.company_dsnurl or pb.company_url = pf.company_spvurl or pb.company_url = pf.company_csturl)) ";
+        }
+        /*
+        * 招投标 + 竣工验收
+        * */
+        elseif ($params_arr['bid'] == 1 && $params_arr['contract'] == 0 && $params_arr['permit'] == 0 && $params_arr['finish'] == 1 ){
+            $join[] = " join jz_project_bid pb on p.project_url = pb.project_url";
+            $join[] = " join jz_project_finish pf on (p.project_url = pf.project_url and (pb.company_url = pf.company_dsnurl or pb.company_url = pf.company_spvurl or pb.company_url = pf.company_csturl)) ";
+            $join[] = " left join jz_project_permit_new pp on (p.project_url = pp.project_url and (pb.company_url = pp.company_rcsurl or pb.company_url = pp.company_dsnurl or pb.company_url = pp.company_spvurl or pb.company_url = pp.company_csturl) )";
+            $join[] = " left join jz_project_contract pc on p.project_url = pc.project_url and pb.company_url = pc.company_inpurl ";
+        }
+        /*
+        * 合同备案 + 施工许可
+        * */
+        elseif ($params_arr['bid'] == 0 && $params_arr['contract'] == 1 && $params_arr['permit'] == 1 && $params_arr['finish'] == 0 ){
+            $join[] = " join jz_project_contract pc on p.project_url = pc.project_url ";
+            $join[] = " join jz_project_permit_new pp on (p.project_url = pp.project_url and (pc.company_inpurl = pp.company_rcsurl or pc.company_inpurl = pp.company_dsnurl or pc.company_inpurl = pp.company_spvurl or pc.company_inpurl = pp.company_csturl) )";
+            $join[] = " left join jz_project_bid pb on p.project_url = pb.project_url and pb.company_url = pc.company_inpurl ";
+            $join[] = " left join jz_project_finish pf on (p.project_url = pf.project_url and (pc.company_inpurl = pf.company_dsnurl or pc.company_inpurl = pf.company_spvurl or pc.company_inpurl = pf.company_csturl)) ";
+        }
+        /*
+        * 合同备案 + 竣工验收
+        * */
+        elseif ($params_arr['bid'] == 0 && $params_arr['contract'] == 1 && $params_arr['permit'] == 0 && $params_arr['finish'] == 1 ){
+            $join[] = " join jz_project_contract pc on p.project_url = pc.project_url ";
+            $join[] = " join jz_project_finish pf on (p.project_url = pf.project_url and (pc.company_inpurl = pf.company_dsnurl or pc.company_inpurl = pf.company_spvurl or pc.company_inpurl = pf.company_csturl)) ";
+            $join[] = " left join jz_project_permit_new pp on (p.project_url = pp.project_url and (pc.company_inpurl = pp.company_rcsurl or pc.company_inpurl = pp.company_dsnurl or pc.company_inpurl = pp.company_spvurl or pc.company_inpurl = pp.company_csturl) )";
+            $join[] = " left join jz_project_bid pb on p.project_url = pb.project_url and pb.company_url = pc.company_inpurl ";
+        }
+        /*
+        * 施工许可 + 竣工验收
+        * */
+        elseif ($params_arr['bid'] == 0 && $params_arr['contract'] == 0 && $params_arr['permit'] == 1 && $params_arr['finish'] == 1 ){
+            $join[] = " join jz_project_permit_new pp on p.project_url = pp.project_url ";
+            $join[] = " join jz_project_finish pf on p.project_url = pf.project_url ";
+            $join[] = " left join jz_project_contract pc on (p.project_url = pc.project_url and (pc.company_inpurl = pp.company_rcsurl or pc.company_inpurl = pp.company_dsnurl or pc.company_inpurl = pp.company_spvurl or pc.company_inpurl = pp.company_csturl) )";
+            $join[] = " left join jz_project_bid pb on (p.project_url = pb.project_url and (pb.company_url = pp.company_rcsurl or pb.company_url = pp.company_dsnurl or pb.company_url = pp.company_spvurl or pb.company_url = pp.company_csturl) ) ";
+        }
+        /*
+        * 招投标 + 合同备案 + 施工许可
+        * */
+        elseif ($params_arr['bid'] == 1 && $params_arr['contract'] == 1 && $params_arr['permit'] == 1 && $params_arr['finish'] == 0 ){
+            $join[] = " join jz_project_bid pb on p.project_url = pb.project_url ";
+            $join[] = " join jz_project_contract pc on p.project_url = pc.project_url and  and pb.company_url = pc.company_inpurl ";
+            $join[] = " join jz_project_permit_new pp on (p.project_url = pp.project_url  and (pb.company_url = pp.company_rcsurl or pb.company_url = pp.company_dsnurl or pb.company_url = pp.company_spvurl or pb.company_url = pp.company_csturl) )";
+            $join[] = " left join jz_project_finish pf on (p.project_url = pf.project_url and (pb.company_url = pf.company_dsnurl or pb.company_url = pf.company_spvurl or pb.company_url = pf.company_csturl) )";
+        }
+        /*
+        * 招投标 + 合同备案 + 竣工验收
+        * */
+        elseif ($params_arr['bid'] == 1 && $params_arr['contract'] == 1 && $params_arr['permit'] == 0 && $params_arr['finish'] == 1 ){
+            $join[] = " join jz_project_bid pb on p.project_url = pb.project_url ";
+            $join[] = " join jz_project_contract pc on p.project_url = pc.project_url and  and pb.company_url = pc.company_inpurl ";
+            $join[] = " join jz_project_finish pf on (p.project_url = pf.project_url and (pb.company_url = pf.company_dsnurl or pb.company_url = pf.company_spvurl or pb.company_url = pf.company_csturl) )";
+            $join[] = " left join jz_project_permit_new pp on (p.project_url = pp.project_url  and (pb.company_url = pp.company_rcsurl or pb.company_url = pp.company_dsnurl or pb.company_url = pp.company_spvurl or pb.company_url = pp.company_csturl) )";
+        }
+        /*
+        * 合同备案 + 施工许可 + 竣工验收
+        * */
+        elseif ($params_arr['bid'] == 0 && $params_arr['contract'] == 1 && $params_arr['permit'] == 1 && $params_arr['finish'] == 1 ){
+            $join[] = " join jz_project_contract pc on p.project_url = pc.project_url ";
+            $join[] = " left join jz_project_permit_new pp on (p.project_url = pp.project_url  and (pc.company_inpurl = pp.company_rcsurl or pc.company_inpurl = pp.company_dsnurl or pc.company_inpurl = pp.company_spvurl or pc.company_inpurl = pp.company_csturl) )";
+            $join[] = " join jz_project_finish pf on (p.project_url = pf.project_url and (pc.company_inpurl = pf.company_dsnurl or pc.company_inpurl = pf.company_spvurl or pc.company_inpurl = pf.company_csturl) )";
+            $join[] = " join jz_project_bid pb on p.project_url = pb.project_url and pb.company_url = pc.company_inpurl ";
+        }
+        /*
+        * 4个全选/全不选
+        * */
+        elseif (
+            ($params_arr['bid'] == 1 && $params_arr['contract'] == 1 && $params_arr['permit'] == 1 && $params_arr['finish'] == 1) ||
+            ($params_arr['bid'] == 0 && $params_arr['contract'] == 0 && $params_arr['permit'] == 0 && $params_arr['finish'] == 0)
+        ){
+            $join[] = " join jz_project_bid pb on p.project_url = pb.project_url ";
+            $join[] = " join jz_project_contract pc on p.project_url = pc.project_url and pb.company_url = pc.company_inpurl ";
+            $join[] = " join jz_project_permit_new pp on (p.project_url = pp.project_url  and (pb.company_url = pp.company_rcsurl or pb.company_url = pp.company_dsnurl or pb.company_url = pp.company_spvurl or pb.company_url = pp.company_csturl) )";
+            $join[] = " join jz_project_finish pf on (p.project_url = pf.project_url and (pb.company_url = pf.company_dsnurl or pb.company_url = pf.company_spvurl or pb.company_url = pf.company_csturl) )";
+        }
+
+
+        /*
+         * 以下是没有加 施工许可（permit）之前的连表逻辑，暂时注释 留作参考
         if ($params_arr['bid'] == 1 && $params_arr['contract'] == 0 && $params_arr['finish'] == 0){
             #只选择了招投标
             $join[] = " join jz_project_bid pb on p.project_url = pb.project_url ";
@@ -315,6 +460,8 @@ class Project extends model{
             $join[] = " join jz_project_contract pc on (p.project_url = pc.project_url and pb.company_url = pc.company_inpurl) ";
             $join[] = " join jz_project_finish pf on (p.project_url = pf.project_url and (pb.company_url = pf.company_dsnurl or pb.company_url = pf.company_spvurl or pb.company_url = pf.company_csturl)) ";
         }
+        */
+
         # 处理转换where条件的参数
         $where = Project::transformWhere($params_arr);
         # change
