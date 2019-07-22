@@ -394,7 +394,7 @@ class Project extends model{
         * */
         elseif ($params_arr['bid'] == 1 && $params_arr['contract'] == 1 && $params_arr['permit'] == 1 && $params_arr['finish'] == 0 ){
             $join[] = " join jz_project_bid pb on p.project_url = pb.project_url ";
-            $join[] = " join jz_project_contract pc on p.project_url = pc.project_url and  and pb.company_url = pc.company_inpurl ";
+            $join[] = " join jz_project_contract pc on p.project_url = pc.project_url and pb.company_url = pc.company_inpurl ";
             $join[] = " join jz_project_permit_new pp on (p.project_url = pp.project_url  and (pb.company_url = pp.company_rcsurl or pb.company_url = pp.company_dsnurl or pb.company_url = pp.company_spvurl or pb.company_url = pp.company_csturl) )";
             $join[] = " left join jz_project_finish pf on (p.project_url = pf.project_url and (pb.company_url = pf.company_dsnurl or pb.company_url = pf.company_spvurl or pb.company_url = pf.company_csturl) )";
         }
