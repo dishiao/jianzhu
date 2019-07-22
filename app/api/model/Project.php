@@ -274,8 +274,8 @@ class Project extends model{
         'p.project_name','p.project_type','p.project_nature','p.project_use','p.project_allmoney','p.project_acreage',
         'pb.bid_type','pb.bid_way','pb.bid_unitname','pb.bid_date','pb.bid_money','pb.bid_area','pb.bid_unitagency','pb.bid_url',
         'pc.contract_type','pc.contract_money','pc.contract_signtime','pc.contract_scale','pc.contract_unitname','pc.contract_add_url',
-        'pf.finish_money','pf.finish_area','pf.finish_realbegin','pf.finish_realfinish','pf.finish_unitdsn','pf.finish_unitspv','pf.finish_unitcst','pf.finish_add_url',
-        'pp.permit_money','pp.permit_certdate'
+        'pp.permit_money','pp.permit_area','pp.permit_certdate','pp.permit_unitrcs','permit_unitdsn','permit_unitspv','permit_unitcst',
+        'pf.finish_money','pf.finish_area','pf.finish_realbegin','pf.finish_realfinish','pf.finish_unitdsn','pf.finish_unitspv','pf.finish_unitcst','pf.finish_add_url'
         ];
         $where = [];
         $join = [];
@@ -324,7 +324,7 @@ class Project extends model{
             $join[] = " join jz_project_permit_new pp on p.project_url = pp.project_url ";
             $join[] = " left join jz_project_bid pb on (p.project_url = pb.project_url and (pb.company_url = pp.company_rcsurl or pb.company_url = pp.company_dsnurl or pb.company_url = pp.company_spvurl or pb.company_url = pp.company_csturl) )";
             $join[] = " left join jz_project_contract pc on (p.project_url = pc.project_url and (pc.company_inpurl = pp.company_rcsurl or pc.company_inpurl = pp.company_dsnurl or pc.company_inpurl = pp.company_spvurl or pc.company_inpurl = pp.company_csturl) ) ";
-            $join[] = " left join jz_project_finish pf on (p.project_url=pf.project_url and (pp.company_dsnrul=pf.company_dsnurl or pp.company_spvurl=pf.company_spvurl or pp.company_csturl=pf.company_csturl))";
+            $join[] = " left join jz_project_finish pf on (p.project_url=pf.project_url and (pp.company_dsnurl=pf.company_dsnurl or pp.company_spvurl=pf.company_spvurl or pp.company_csturl=pf.company_csturl))";
         }
         /*
         * 竣工验收
@@ -333,7 +333,7 @@ class Project extends model{
             $join[] = " join jz_project_finish pf on p.project_url = pf.project_url ";
             $join[] = " left join jz_project_bid pb on (p.project_url = pb.project_url and (pb.company_url = pf.company_dsnurl or pb.company_url = pf.company_spvurl or pb.company_url = pf.company_csturl)) ";
             $join[] = " left join jz_project_contract pc on (p.project_url = pc.project_url and pb.company_url = pc.company_inpurl) ";
-            $join[] = " left join jz_project_permit_new pp on (p.project_url=pp.project_url and (pp.company_dsnrul=pf.company_dsnurl or pp.company_spvurl=pf.company_spvurl or pp.company_csturl=pf.company_csturl))";
+            $join[] = " left join jz_project_permit_new pp on (p.project_url=pp.project_url and (pp.company_dsnurl=pf.company_dsnurl or pp.company_spvurl=pf.company_spvurl or pp.company_csturl=pf.company_csturl))";
         }
         /*
         * 招投标 + 合同备案
@@ -385,7 +385,7 @@ class Project extends model{
         * */
         elseif ($params_arr['bid'] == 0 && $params_arr['contract'] == 0 && $params_arr['permit'] == 1 && $params_arr['finish'] == 1 ){
             $join[] = " join jz_project_permit_new pp on p.project_url = pp.project_url ";
-            $join[] = " join jz_project_finish pf on (p.project_url=pf.project_url and (pp.company_dsnrul=pf.company_dsnurl or pp.company_spvurl=pf.company_spvurl or pp.company_csturl=pf.company_csturl))";
+            $join[] = " join jz_project_finish pf on (p.project_url=pf.project_url and (pp.company_dsnurl=pf.company_dsnurl or pp.company_spvurl=pf.company_spvurl or pp.company_csturl=pf.company_csturl))";
             $join[] = " left join jz_project_contract pc on (p.project_url = pc.project_url and (pc.company_inpurl = pp.company_rcsurl or pc.company_inpurl = pp.company_dsnurl or pc.company_inpurl = pp.company_spvurl or pc.company_inpurl = pp.company_csturl) )";
             $join[] = " left join jz_project_bid pb on (p.project_url = pb.project_url and (pb.company_url = pp.company_rcsurl or pb.company_url = pp.company_dsnurl or pb.company_url = pp.company_spvurl or pb.company_url = pp.company_csturl) ) ";
         }
