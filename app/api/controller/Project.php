@@ -131,7 +131,7 @@ class Project extends ApiBase
 		# 合同备案条件字段
 		$contract_arr = ['contract_type','contract_money','contract_scale','contract_date_start','contract_date_end'];
 		# 施工许可条件字段
-        $permit_arr = ['permit_money','permit_arar','permit_certdate_start','permit_certdate_end'];
+        $permit_arr = ['permit_money','permit_area','permit_certdate_start','permit_certdate_end'];
 		# 竣工验收备案条件字段
 		$finish_arr = ['finish_money','finish_area','finish_realbegin_start','finish_realbegin_end','finish_realfinish_start','finish_realfinish_end'];
 		$params['bid'] = 0;
