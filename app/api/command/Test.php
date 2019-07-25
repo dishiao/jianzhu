@@ -6,6 +6,11 @@ use think\console\Input;
 use think\console\Output;
 use think\Db;
 
+/*
+ * test ：
+ * php think.php test
+ * */
+
 class Test extends Command
 {
     protected function configure()
