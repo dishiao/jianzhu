@@ -14,8 +14,10 @@ use app\api\constant;
  * */
 class Four2one extends Command
 {
-    const TOTAL_PROJECT_NUMBER = 21000000;
-
+    # 项目表 总数
+    const TOTAL_PROJECT_NUMBER = 2400000;
+    # slice 分隔数量
+    const SLICE_NUMBER = 100;
     protected function configure()
     {
         $this->setName('Four2one')->setDescription('this is four tables to one table command');
@@ -38,10 +40,12 @@ class Four2one extends Command
 
         /*
          * 采用分割limit的方式来查询 SQL
-         * 每次跑 1000 条
-         * 目前总数 20425034条
          * */
-        for ($i = 0; $i < self::TOTAL_PROJECT_NUMBER; $i = $i+1000){
+        for ($i = 0; $i < self::TOTAL_PROJECT_NUMBER; $i = $i+self::SLICE_NUMBER){
+            $output->comment("start...{$i}"." and times is ".date('Y-m-d h:i:s',time()));
+            $time_start = time();
+            $end_num = $i+self::SLICE_NUMBER;
+
             $sql = "SELECT
                     p.project_url as bcpf_project_url,
                     p.project_name as bcpf_project_name, 
@@ -121,15 +125,17 @@ class Four2one extends Command
                         OR pb.company_url = pf.company_spvurl
                         OR pb.company_url = pf.company_csturl
                     )
-                ) limit {$i}, 1000 ";
+                ) where p.id >= {$i} and p.id <= {$end_num} and p.status=0";
             $res = Db::query($sql);
             if (empty($res)){
                 continue;
             }
-            $output->comment("start...{$i}");
+
 //            Log::info("start...the start cursor is {$i}");
             $this->praseAllData($res);
-            $output->comment("end...{$i}");
+            $output->comment("end...{$i}"." and times is ".date('Y-m-d h:i:s',time()));
+            $time_stop = time();
+            $output->comment("this round use time ".(((($time_stop-$time_start)%86400)%3600)%60)." s");
 //            Log::info("end...the end cursor is {$i}");
         }
     }
