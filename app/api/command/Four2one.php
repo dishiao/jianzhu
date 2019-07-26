@@ -14,6 +14,7 @@ use app\api\constant;
  * */
 class Four2one extends Command
 {
+
     # 项目表 总数
     const TOTAL_PROJECT_NUMBER = 2400000;
     # slice 分隔数量
@@ -25,6 +26,7 @@ class Four2one extends Command
 
     protected function execute(Input $input, Output $output)
     {
+        ini_set ('memory_limit', '2048M');
         /*
          * 初始化 日志
          * */
