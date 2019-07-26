@@ -11,6 +11,10 @@ use app\api\constant;
 /*
  * @author : dishiao
  * @tips : 将 project主表 以及 子表 bid、permit、contract、finish 合成一张表
+ * @command :
+ *          项目根目录下
+ *          php think.php list      -> 查看command列表以及帮助
+ *          php think.php Four2one  -> 运行
  * */
 class Four2one extends Command
 {
