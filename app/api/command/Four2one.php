@@ -26,10 +26,10 @@ class Four2one extends Command
         /*
          * 初始化 日志
          * */
-        Log::init([
-            'type'  =>  'File',
-            'path'  =>  APP_PATH.'/logs/'
-        ]);
+//        Log::init([
+//            'type'  =>  'File',
+//            'path'  =>  APP_PATH.'/logs/'
+//        ]);
         /*
          * 跑之前 先清空表 jz_project_bcpf
          * */
@@ -127,10 +127,10 @@ class Four2one extends Command
                 continue;
             }
             $output->comment("start...{$i}");
-            Log::info("start...the start cursor is {$i}");
+//            Log::info("start...the start cursor is {$i}");
             $this->praseAllData($res);
             $output->comment("end...{$i}");
-            Log::info("end...the end cursor is {$i}");
+//            Log::info("end...the end cursor is {$i}");
         }
     }
 
@@ -166,7 +166,7 @@ class Four2one extends Command
             }
             $res = Db::table("jz_project_bcpf")->insert($value);
             if ($res < 1){
-                Log::error("this is insert failure".json_encode($value));
+//                Log::error("this is insert failure".json_encode($value));
             }
         }
     }
