@@ -21,8 +21,10 @@ class Four2one extends Command
 
     # 项目表 总数
     const TOTAL_PROJECT_NUMBER = 2400000;
-    # slice 分隔数量
-    const SLICE_NUMBER = 100;
+    # 查询项目数量时 slice 分隔数量
+    const SLICE_NUMBER = 1;
+    # 查询具体项目时 slice 分隔数量
+    const SLICE_NUMBER_DETAIL = 1000;
     protected function configure()
     {
         $this->setName('Four2one')->setDescription('this is four tables to one table command');
@@ -45,14 +47,48 @@ class Four2one extends Command
         Db::execute($sql);
 
         /*
-         * 采用分割limit的方式来查询 SQL
+         * 采用分割的方式来查询 SQL
          * */
         for ($i = 0; $i < self::TOTAL_PROJECT_NUMBER; $i = $i+self::SLICE_NUMBER){
             $output->comment("start...{$i}"." and times is ".date('Y-m-d h:i:s',time()));
             $time_start = time();
-            $end_num = $i+self::SLICE_NUMBER;
 
-            $sql = "SELECT
+            $sql_nums = "SELECT
+                    count(*) as nums
+                FROM
+                    jz_project p
+                LEFT JOIN jz_project_bid pb ON p.project_url = pb.project_url
+                LEFT JOIN jz_project_contract pc ON p.project_url = pc.project_url
+                AND pb.company_url = pc.company_inpurl
+                LEFT JOIN jz_project_permit_new pp ON (
+                    p.project_url = pp.project_url
+                    AND (
+                        pb.company_url = pp.company_rcsurl
+                        OR pb.company_url = pp.company_dsnurl
+                        OR pb.company_url = pp.company_spvurl
+                        OR pb.company_url = pp.company_csturl
+                    )
+                )
+                LEFT JOIN jz_project_finish pf ON (
+                    p.project_url = pf.project_url
+                    AND (
+                        pb.company_url = pf.company_dsnurl
+                        OR pb.company_url = pf.company_spvurl
+                        OR pb.company_url = pf.company_csturl
+                    )
+                ) where p.id = {$i}";
+            $res_nums = Db::query($sql_nums);
+            if (($res_nums[0]['nums']) < 1){
+                continue;
+            }
+            $nums = $res_nums[0]['nums'];
+            /*
+             * 查询出来有数据的话就对数据进行计数并循环
+             * 详细项目数据进行根据上面查出来的数量分组解析
+             * */
+            for ($j = 0; $j <= $nums; $j = $j + self::SLICE_NUMBER_DETAIL){
+                $k = self::SLICE_NUMBER_DETAIL;
+                $sql = "SELECT
                     p.project_url as bcpf_project_url,
                     p.project_name as bcpf_project_name, 
                     p.project_area as bcpf_project_area,
@@ -131,18 +167,20 @@ class Four2one extends Command
                         OR pb.company_url = pf.company_spvurl
                         OR pb.company_url = pf.company_csturl
                     )
-                ) where p.id >= {$i} and p.id <= {$end_num} and p.status=0";
-            $res = Db::query($sql);
-            if (empty($res)){
-                continue;
-            }
+                ) where p.id = {$i}
+                limit {$j},{$k}";
 
+                $res = Db::query($sql);
+                if (empty($res)){
+                    continue;
+                }
 //            Log::info("start...the start cursor is {$i}");
-            $this->praseAllData($res);
+                $this->praseAllData($res);
+//            Log::info("end...the end cursor is {$i}");
+            }
             $output->comment("end...{$i}"." and times is ".date('Y-m-d h:i:s',time()));
             $time_stop = time();
             $output->comment("this round use time ".(((($time_stop-$time_start)%86400)%3600)%60)." s");
-//            Log::info("end...the end cursor is {$i}");
         }
     }
 
