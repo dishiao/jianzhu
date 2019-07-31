@@ -58,14 +58,14 @@ class ProjectDataProcessV1 extends Command
     }
 
     private function processData($project_url){
-        if (is_numeric($project_url)){
+        if (isset($project_url) && !empty($project_url)){
             # process bid
             $sql_bid = "SELECT
                             id
                         FROM
                             `jz_project_bid`
                         WHERE
-                            project_url = {$project_url}
+                            project_url = '{$project_url}'
                         GROUP BY
                             company_url,
                             bid_money,
@@ -93,7 +93,7 @@ class ProjectDataProcessV1 extends Command
                         FROM
                             `jz_project_contract`
                         WHERE
-                            project_url = {$project_url}
+                            project_url = '{$project_url}'
                         GROUP BY
                             company_inpurl,
                             contract_money,
@@ -121,7 +121,7 @@ class ProjectDataProcessV1 extends Command
                         FROM
                             `jz_project_permit_new`
                         WHERE
-                            project_url = {$project_url}
+                            project_url = '{$project_url}'
                         GROUP BY
                             permit_money,
                             company_rcsurl,
@@ -151,7 +151,7 @@ class ProjectDataProcessV1 extends Command
                         FROM
                             `jz_project_finish`
                         WHERE
-                            project_url = {$project_url}
+                            project_url = '{$project_url}'
                         GROUP BY
                             finish_realbegin,
                             finish_realfinish,
