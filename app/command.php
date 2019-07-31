@@ -3,4 +3,5 @@
 return [
     'app\api\command\Test',
     'app\api\command\Four2one',
+    'app\api\command\ProjectDataProcessV1',
     ];
