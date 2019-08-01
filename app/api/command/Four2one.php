@@ -11,6 +11,7 @@ use app\api\constant;
 /*
  * @author : dishiao
  * @tips : 将 project主表 以及 子表 bid、permit、contract、finish 合成一张表
+ * 注意！！！现在已将四张子表进行数据清洗后变成V1
  * @command :
  *          项目根目录下
  *          php think.php list      -> 查看command列表以及帮助
@@ -57,10 +58,10 @@ class Four2one extends Command
                     count(*) as nums
                 FROM
                     jz_project p
-                LEFT JOIN jz_project_bid pb ON p.project_url = pb.project_url
-                LEFT JOIN jz_project_contract pc ON p.project_url = pc.project_url
+                LEFT JOIN jz_project_bid_v1 pb ON p.project_url = pb.project_url
+                LEFT JOIN jz_project_contract_v1 pc ON p.project_url = pc.project_url
                 AND pb.company_url = pc.company_inpurl
-                LEFT JOIN jz_project_permit_new pp ON (
+                LEFT JOIN jz_project_permit_v1 pp ON (
                     p.project_url = pp.project_url
                     AND (
                         pb.company_url = pp.company_rcsurl
@@ -69,7 +70,7 @@ class Four2one extends Command
                         OR pb.company_url = pp.company_csturl
                     )
                 )
-                LEFT JOIN jz_project_finish pf ON (
+                LEFT JOIN jz_project_finish_v1 pf ON (
                     p.project_url = pf.project_url
                     AND (
                         pb.company_url = pf.company_dsnurl
@@ -148,10 +149,10 @@ class Four2one extends Command
                     
                 FROM
                     jz_project p
-                LEFT JOIN jz_project_bid pb ON p.project_url = pb.project_url
-                LEFT JOIN jz_project_contract pc ON p.project_url = pc.project_url
+                LEFT JOIN jz_project_bid_v1 pb ON p.project_url = pb.project_url
+                LEFT JOIN jz_project_contract_v1 pc ON p.project_url = pc.project_url
                 AND pb.company_url = pc.company_inpurl
-                LEFT JOIN jz_project_permit_new pp ON (
+                LEFT JOIN jz_project_permit_v1 pp ON (
                     p.project_url = pp.project_url
                     AND (
                         pb.company_url = pp.company_rcsurl
@@ -160,7 +161,7 @@ class Four2one extends Command
                         OR pb.company_url = pp.company_csturl
                     )
                 )
-                LEFT JOIN jz_project_finish pf ON (
+                LEFT JOIN jz_project_finish_v1 pf ON (
                     p.project_url = pf.project_url
                     AND (
                         pb.company_url = pf.company_dsnurl
