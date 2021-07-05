@@ -130,10 +130,13 @@ class Project extends ApiBase
 		$bid_arr = ['bid_way','bid_money','bid_date_start','bid_date_end'];
 		# 合同备案条件字段
 		$contract_arr = ['contract_type','contract_money','contract_scale','contract_date_start','contract_date_end'];
+		# 施工许可条件字段
+        $permit_arr = ['permit_money','permit_area','permit_certdate_start','permit_certdate_end'];
 		# 竣工验收备案条件字段
 		$finish_arr = ['finish_money','finish_area','finish_realbegin_start','finish_realbegin_end','finish_realfinish_start','finish_realfinish_end'];
 		$params['bid'] = 0;
 		$params['contract'] = 0;
+        $params['permit'] = 0;
 		$params['finish'] = 0;
 		$params_keys = array_keys($params);
 		$params_count = count($params_keys);
@@ -144,6 +147,9 @@ class Project extends ApiBase
 			if (array_search($params_keys[$i], $contract_arr) !== false) {
 				$params['contract'] = 1;
 			}
+			if (array_search($params_keys[$i], $permit_arr) !== false) {
+                $params['permit'] = 1;
+            }
 			if (array_search($params_keys[$i], $finish_arr) !== false) {
 				$params['finish'] = 1;
 			}
@@ -173,11 +179,13 @@ class Project extends ApiBase
             "项目名称,项目分类,建设性质,工程用途,总投资,总面积,
             招标类型,招标方式,中标单位名称,中标日期,中标金额(万元),面积（平方米）,招标代理单位名称,网站招投标详情页面,
             合同类别,合同金额（万元）,合同签订日期,建设规模,承包单位,网站合同备案详情页面,
+            合同金额(万元),面积(平方米),发证日期,勘察单位,设计单位,监理单位,施工单位,
             实际造价（万元）,实际面积（平方米）,实际开工日期,实际竣工验收日期,设计单位,监理单位,施工单位,网站竣工验收备案详情页面";
         $keys   =
             "project_name,project_type,project_nature,project_use,project_allmoney,project_acreage,
             bid_type,bid_way,bid_unitname,bid_date,bid_money,bid_area,bid_unitagency,bid_url,
             contract_type,contract_money,contract_signtime,contract_scale,contract_unitname,contract_add_url,
+            'pp.permit_money','pp.permit_area','pp.permit_certdate','pp.permit_unitrcs','permit_unitdsn','permit_unitspv','permit_unitcst',
             finish_money,finish_area,finish_realbegin,finish_realfinish,finish_unitdsn,finish_unitspv,finish_unitcst,finish_add_url";
         $path = export_excel($titles, $keys, $list, '项目');
         return $this->apiReturn(['path'=>$path]);

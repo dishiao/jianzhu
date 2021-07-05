@@ -1,12 +1,7 @@
 <?php
-// +---------------------------------------------------------------------+
-// | OneBase    | [ WE CAN DO IT JUST THINK ]                            |
-// +---------------------------------------------------------------------+
-// | Licensed   | http://www.apache.org/licenses/LICENSE-2.0 )           |
-// +---------------------------------------------------------------------+
-// | Author     | Bigotry <3162875@qq.com>                               |
-// +---------------------------------------------------------------------+
-// | Repository | https://gitee.com/Bigotry/OneBase                      |
-// +---------------------------------------------------------------------+
-
-return [];
+// command 需要在数组里面加上
+return [
+    'app\api\command\Test',
+    'app\api\command\Four2one',
+    'app\api\command\ProjectDataProcessV1',
+    ];
